@@ -1,0 +1,39 @@
+
+h2 사용 위해 build.gradle 설정했을 시 application.properties 설정
+
+# DATABASE
+spring.h2.console.enabled=true				H2 콘솔의 접속을 허용할지 여부.
+spring.h2.console.path=/h2-console				콘솔 접속을 위한 URL 경로
+spring.datasource.url=jdbc:h2:~/local				데이터베이스 접속을 위한 경로
+spring.datasource.driverClassName=org.h2.Driver		데이터베이스 접속시 사용 드라이버
+spring.datasource.username=sa				db 사용자명
+spring.datasource.password=				db 패스워드
+
+url에서 ~는 로컬 홈디렉토리 의미.
+따라서 홈디렉토리에 해당하는 위치 하위에 local.mv.db라는 파일을 만들어야 한다.
+~/test로 설정했다면 test.mv.db 파일.
+
+윈도우 홈 디렉토리는 C:\user\사용자명
+
+-------------------------------------------------
+
+jpa 사용 위해 build.gradle에 라이브러리 implementation 했을 시
+
+# JPA
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.H2Dialect	데이터베이스 엔진 종류 설정
+spring.jpa.hibernate.ddl-auto=update					엔티티를 기준으로 테이블을 생성하는 규칙 정의
+
+* spring.jpa.hibernate.ddl-auto 설정값
+none - 엔티티가 변경되더라도 데이터베이스를 변경하지 않는다.
+update - 엔티티의 변경된 부분만 적용한다.
+validate - 변경사항이 있는지 검사만 한다.
+create - 스프링부트 서버가 시작될때 모두 drop하고 다시 생성한다.
+create-drop - create와 동일하다. 하지만 종료시에도 모두 drop 한다.
+
+보통 개발은 update, 운영은 none or validate 사용
+
+-------------------------------------------------------------
+
+
+
+

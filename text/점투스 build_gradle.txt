@@ -1,0 +1,11 @@
+
+dependencies 정리
+
+
+- runtimeOnly
+해당 라이브러리가 런타임시에만 필요한 경우 사용.
+컴파일시에만 필요한 경우는 compileOnly 사용.
+
+- implementation
+라이브러리 설치
+
