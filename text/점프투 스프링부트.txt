@@ -5,6 +5,8 @@ ORM
 
 JPA
 
+엔티티
+
 =================================================================================
 
 스프링부트 프로젝트 기본 구조
@@ -73,11 +75,56 @@ JPA는 인터페이스이므로 구현하는 실제 클래스 필요.
 
 --------------------------------------------------------------------------------------------------------------
 
+엔티티
+
+DB 테이블과 매핑되는 자바 클래스.
+
+클래스위에 @Entity 달아줘야 한다. (@Controller 사용과 동일)
+
+ - 사용되는 어노테이션들
+
+@Id
+ - PK 지정
+
+@GeneratedValue(strategy = GenerationType.IDENTITY)
+ - 값 저장시 해당 속성값을 따로 지정하지 않아도 1씩 증가하며 세팅.
+ - strategy는 채번 규칙. GenerationType.IDENTITY는 해당 컬럼만의 독립적 시퀀스를 사용한다는 뜻.
+   이를 지정하지 않으면 다른 컬럼들과 시퀀스를 공유하므로 일정한 순서의 고유번호를 생성하지 못한다.
+
+@Column
+ - 해당 속성을 컬럼으로 지정.
+   사실 지정하지 않아도 알아서 인식하기 때문에, 이걸 달아주는 경우는 속성의 속성을 지정하기 위함.
+  ex) @Column(length = 200)	@Column(columnDefinition = "TEXT")
+        컬럼 길이 200		   컬럼길이 지정 어려울 경우 TEXT 속성으로 지정 (변동)
+ - 따라서 컬럼이 아니라고 지정하려면 @Transient를 달아주어야 한다.
+
+* 엔티티 클래스 속성은 자바이므로 카멜케이싱을 따르는데,
+   이는 DB로 넘어가면서 자동으로 스네이크케이싱에 맞춰진다. ex) createDate -> create_date
+
+* 일반적으로 엔티티는 setter 구현하지 않고
+   롬복의 @Builder 통한 빌드패턴 사용하고, 데이터 변경시에는 필요한 메소드를 엔티티에 추가하여 사용한다.
 
 
 
 
+게시판에서 사용할 질문과 답변 엔티티를 하나씩 만드는 경우,
+질문과 답변은 서로 매칭될 수 있기 때문에 상호 엔티티에 상호 속성을 하나씩 넣어줄 수 있다.
+private Question question;
+private Answer answer;
 
+질문 하나에 답변이 여러개 달리기 때문에 
+Asnwer 엔티티속 Question 속성에는 @ManyToOne 어노테이션을
+Question 엔티티속 Answer 속성에는 @OneToMany 어노테이션을 달아준다.
+-> 이 때 답변이 여러개로 관리되므로 Question 엔티티속 Answer 속성은 private List<Answer> answerList; 이럭헤 리스트로 만들어 준다.
+
+* OneToMany에 줄 수 있는 옵션 예시
+ (mappedBy = "question", cascade = CascadeType.REMOVE)
+-> mappedBy는 참조 엔티티 속성명을 의미하므로 Answer엔티티 속 Question 속성명인 question 부여.
+-> cascade는 삭제시 처리 방법으로, 질문 삭제시 답변도 모두 삭제되어야하므로 CascadeType.REMOVE 지정.
+
+ManyToOne, OneToMany는 FK 지정이다.
+
+--------------------------------------------------------------------------------------------------------------
 
 
 
