@@ -7,6 +7,10 @@ JPA
 
 엔티티
 
+레포지토리
+
+JPA CRUD
+
 =================================================================================
 
 스프링부트 프로젝트 기본 구조
@@ -126,12 +130,281 @@ ManyToOne, OneToMany는 FK 지정이다.
 
 --------------------------------------------------------------------------------------------------------------
 
+레포지토리
+
+엔티티에 의해 생성된 DB 테이블에 접근하는 메서드들을 사용하기 위한 인터페이스.
+CRUD 처리 계층
+
+레포지토리 인터페이스는 JpaRepository 인터페이스 상속받아 구현
+상속시 제네릭스 타입으로 <대상이 되는 엔티티 타입, 해당 엔티티 PK 타입>
+
+ex) public interface QuestionRepository extends JpaRepository<Question, Integer>
+
+
+
+--------------------------------------------------------------------------------------------------------------
+
+스프링부트 테스트
+
+JUnit 기반의 스플이부트 테스트 프레임워크.
+
+/프로젝트명/src/test/java/com/mysite/프로젝트명/프로젝트명ApplicationTest.java
+
+아래 JPA CRUD에서 테스트 클래스 활용하고 있으니 참조
+
+------------------------------------------------------------------------------------------------------------
+
+JPA CRUD 사용법
+
+
+
+ex) insert
+
+package com.mysite.sbb;
+
+import java.time.LocalDateTime;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+
+
+@SpringBootTest									// 해당 클래스가 테스트 클래스임을 의미.
+class SbbApplicationTests {
+
+    @Autowired									// 스프링 DI(의존성주입) 기능. 스프링이 객체를 자동으로 생성해준다.
+    private QuestionRepository questionRepository;
+
+    @Test										// 해당 메소드가 테스트 메소드임을 나타냄. 위 클래스를 JUnit으로 실행하면 해당 메소드 실행된다.
+    void testJpa() {        
+        Question q1 = new Question();
+        q1.setSubject("sbb가 무엇인가요?");
+        q1.setContent("sbb에 대해서 알고 싶습니다.");
+        q1.setCreateDate(LocalDateTime.now());
+        this.questionRepository.save(q1);  // 첫번째 질문 저장
+
+        Question q2 = new Question();
+        q2.setSubject("스프링부트 모델 질문입니다.");
+        q2.setContent("id는 자동으로 생성되나요?");
+        q2.setCreateDate(LocalDateTime.now());
+        this.questionRepository.save(q2);  // 두번째 질문 저장
+    }
+}
+
+* Autowired의 경우 순환참조 등의 문제로 생성자를 통한 객체주입 방식이 권장된다. 테스트에서는 생성자 통한 객체 주입이 불가능해 Autowired를 사용한다.
+
+
+위와 같이 작성 후 Run - Run as - JUnit Test 클릭 -> 테스트 수행 (로컬서버 꺼져있어야 함)
+
+서버 기동후 H2 콘솔 확인해보면 insert가 실행되어 2줄이 들어왔음을 알 수 있다.
 
 
 
 
 
+ex) select
 
+    @Test
+    void testJpa() {
+        List<Question> all = this.questionRepository.findAll();
+        assertEquals(2, all.size());
+
+        Question q = all.get(0);
+        assertEquals("sbb가 무엇인가요?", q.getSubject());
+    }
+
+findAll() -> 모든 행을 조회하는 메소드
+
+assertEquals(기대값, 실제값) -> 두 값이 동일한지 조사. 동일하지 안하면 테스트 실패처리.
+두번째로 쓰인 메소드는 첫번째 데이터 제목이 "sbb가 무엇인가요?"와 일치하는지도 테스트했다.
+
+
+
+ex) findById
+
+    @Test
+    void testJpa() {
+        Optional<Question> oq = this.questionRepository.findById(1);
+        if(oq.isPresent()) {
+            Question q = oq.get();
+            assertEquals("sbb가 무엇인가요?", q.getSubject());
+        }
+    }
+}
+
+findById(id값) -> id값으로 행을 조회.
+
+리턴 타입이 Question이 아닌 Optional임을 주의.
+isPresent로 값이 존재하는지 확인한 후 get으로 값을 가져온다.
+
+
+
+
+
+-- 그 외 데이터 조회 방법 	
+ex) findBySubject 등 -> 지원하지 않으므로 따로 만들어야 한다.
+
+QuestionRepository 인터페이스 하위에 
+Question findBySubject(String subject);
+메소드를 만든다.
+
+그러면
+
+@Test
+void testJpa() {
+	Question q = this.questionRepository.findBySubject("sbb가 무엇인가요?");
+		assertEquals(1, q.getId());
+}
+와 같이 사용 가능하다.
+
+=> findBy + 엔티티 속성명
+레포지토리 메소드를 작성하면, 스프링이 DI 기능으로 알아서 해당 속성의 값으로 데이터를 조회하는 메소드를 완성해준다.
+
+
+
+추가 ex)
+repository에 Question findBySubjectAndContent(String subject, String content); 삽입 후
+
+@Test
+void testJpa() {
+	Question q = this.questionRepository.findBySubjectAndContent("sbb가 무엇인가요?", "sbb에 대해서 알고 싶습니다.");
+	assertEquals(1, q.getId());
+}
+
+
+
+
+
+그 외에
+
+findBySubjectOrContent		(where절에 or 조건으로 엮음)
+
+findByCreateDateBetween		(두 값 사이의 값으로 검색)
+
+findByIdLessThan			(더 작은 항목 검색)
+
+findByIdGraterThanEqual		(크거나 같은 항목 검색)
+
+findBySubjectLike			(like 검색)
+
+findBySubjectIn(Subject[] subjects)	(여러 값 중에 하나인 항목 검색)
+
+findBySubjectOrderByCreateDateAsc	(검색 결과 정렬하여 전달)
+
+등등
+
+쿼리생성규칙 공식문서 참조
+https://docs.spring.io/spring-data/jpa/docs/current/reference/html/#jpa.query-methods.query-creation
+
+
+
+
+
+- 데이터 수정
+
+package com.mysite.sbb;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.Optional;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+
+
+@SpringBootTest
+class SbbApplicationTests {
+
+    @Autowired
+    private QuestionRepository questionRepository;
+
+    @Test
+    void testJpa() {
+        Optional<Question> oq = this.questionRepository.findById(1);
+        assertTrue(oq.isPresent());
+        Question q = oq.get();
+        q.setSubject("수정된 제목");
+        this.questionRepository.save(q);
+    }
+}
+
+assertTrue(값) -> 값이 true인지 검사
+
+
+
+- 데이터 삭제
+
+@Test
+void testJpa() {
+    assertEquals(2, this.questionRepository.count());
+    Optional<Question> oq = this.questionRepository.findById(1);
+    assertTrue(oq.isPresent());
+    Question q = oq.get();
+    this.questionRepository.delete(q);
+    assertEquals(1, this.questionRepository.count());
+}
+
+
+
+- 답변 데이터 생성 후 저장
+
+@Test
+void testJpa() {
+    Optional<Question> oq = this.questionRepository.findById(2);
+    assertTrue(oq.isPresent());
+    Question q = oq.get();
+
+    Answer a = new Answer();
+    a.setContent("네 자동으로 생성됩니다.");
+    a.setQuestion(q);  // 어떤 질문의 답변인지 알기위해서 Question 객체가 필요하다.
+    a.setCreateDate(LocalDateTime.now());
+    this.answerRepository.save(a);
+}
+
+
+
+- 답변 조회
+
+@Test
+void testJpa() {
+        Optional<Answer> oa = this.answerRepository.findById(1);
+        assertTrue(oa.isPresent());
+        Answer a = oa.get();
+        assertEquals(2, a.getQuestion().getId());
+}
+
+id 1인 답변을 조회 후 해당 답변의 질문의 id가 2인지 검사.
+
+
+
+- 답변에 연결된 질문 찾기 vs 질문에 달린 답변 찾기
+
+위에서 답변에 연결된 질문 찾기는 간단했다.
+하지만 반대의 경우 여러 답변이 존재할 수 있으므로 answerList를 이용해야 한다.
+
+@Test
+void testJPA() {
+	Optional<Question> oq = this.questionRepository.findById(2);
+	assertTrue(oq.isPresent());
+    	Question q = oq.get();
+
+    	List<Answer> answerList = q.getAnswerList();
+    	
+    	assertEquals(1, answerList.size());
+    	assertEquals("네 자동으로 생성됩니다.", answerList.get(0).getContent());	
+}
+
+=> 에러가 발생한다. 
+q에 해당하는 answerList는 q.getAnswerList() 메소드 수행시점에 쿼리를 수행하여 정보를 가져오는데,
+findById 사용후 DB 연결 세션이 끊어졌기 때문. -> 테스트라서 그런거지 실제수행시에는 세션이 끊어지지 않아 괜찮다.
+
+테스트시에 이러한 문제를 해결하기 위해서는 테스트메소드 위에 @Transactional 어노테이션을 붙여줘야 한다.
+
+* answerList를 필요한 시점(getAnswerList를 실행한 시점)에 가져오는 것은
+ManyToOne이나 OneToMany 어노테이션에서 (fatch=FetchType.LAZY) 설정이 되어 있기 때문(default). 한번에 가져오는건 EAGER 방식을 설정해줘야 한다.
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 
