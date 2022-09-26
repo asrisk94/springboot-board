@@ -15,4 +15,9 @@ public class MainController {
 		return "index";
 	}
 	
+	@RequestMapping("/")
+	public String root() {
+		return "redirect:/question/list";
+	}
+	
 }

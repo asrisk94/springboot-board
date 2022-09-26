@@ -11,6 +11,12 @@ JPA
 
 JPA CRUD
 
+Model 클래스
+
+Model 클래스
+
+redirect 리다이렉트
+
 =================================================================================
 
 스프링부트 프로젝트 기본 구조
@@ -406,7 +412,133 @@ ManyToOne이나 OneToMany 어노테이션에서 (fatch=FetchType.LAZY) 설정이
 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+Model 클래스
 
+import org.springframework.ui.Model;
+
+리퀘스트 파라미터값들을 알아서 받아오는 모델 클래스.
+리스폰스에 담아 보내는 용도로도 사용 가능.
+
+Model 객체는 따로 생성할 필요 없이 컨트롤러 메소드의 매개변수로 지정하기만 하면
+스프링부트가 자동으로 Model 객체를 생성한다.
+
+
+
+ex)
+
+package com.mysite.sbb.question;
+
+import java.util.List;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+import lombok.RequiredArgsConstructor;
+
+@RequiredArgsConstructor
+@Controller
+public class QuestionController {
+
+    private final QuestionRepository questionRepository;
+
+    @RequestMapping("/question/list")
+    public String list(Model model) {
+        List<Question> questionList = this.questionRepository.findAll();
+        model.addAttribute("questionList", questionList);
+        return "question_list";
+    }
+}
+
+
+src/main/resources/
+question_list.html 파일
+
+<table>
+	<thead>
+		<tr>
+			<th>제목</th>
+			<th>작성일시</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr th:each="question : ${questionList}">
+			<td th:text="${question.subject}"></td>
+			<td th:text="${question.createDate}"></td>
+		</tr>
+	</tbody>
+</table>
+
+
+=>  questionRepository에서 findAll()로 모두 긁어온 정보를 questionList 형태로 model 클래스 객체에 담아 넘긴다.
+=> 대상이 되는 html 파일에서 꺼내어 쓰고 있다. (th는 thymeleaf / jstl과 비슷)
+
+-------------------------------------------------------------------------------------------------------------------------------------------------
+
+Thymeleaf
+
+타임리프 자주사용 속성
+
+th:if="${question != null}"
+-> 조건문에 해당하면 해당 태그요소 출력
+
+
+th:each="question : ${questionList}"
+-> 반복문
+th:each="question, loop : ${questionList}"
+-> loop를 사용해 아래와 같은 사용 가능
+
+loop.index - 반복 순서, 0부터 1씩 증가
+loop.count - 반복 순서, 1부터 1씩 증가
+loop.size - 반복 객체의 요소 갯수 (예: questionList의 요소 갯수)
+loop.first - 루프의 첫번째 순서인 경우 true
+loop.last - 루프의 마지막 순서인 경우 true
+loop.odd - 루프의 홀수번째 순서인 경우 true
+loop.even - 루프의 짝수번째 순서인 경우 true
+loop.current - 현재 대입된 객체 (예: 위의 경우 question과 동일)
+
+
+
+th:text="${question.subject}"
+-> 값 출력
+
+-----------------------------------------------------------------------------------------------
+
+redirect 리다이렉트
+
+다른곳으로 다시 연결하라는 명령어를 클라이언트단에 보내어, 
+해당 주소로 다시 리퀘스트하도록 함 (리턴값에 해당 리퀘스트맵을 주면 된다)
+
+사용법 - redirect: + 해당 주소
+ex)
+redirect:/question/list -> http://localhost:8080/question/list 이동
+
+
+redirect vs forward
+
+redirect:<URL>	->	URL로 리다이렉트 (완전히 새로운 URL로 요청)
+forward:<URL>	->	URL로 포워드 (기존 요청 값들이 유지된 상태로 URL 전환) 
+
+-----------------------------------------------------------------------------------------------
+
+서비스
+
+컨트롤러에서 레포지토리를 직접 호출하지 않고 중간에 두는 과정. 스프링에서 데이터 처리를 위해 작성하는 클래스
+
+서비스 목적
+1. 모듈화 :  여러 레포지토리를 이용하여 같은 처리과정을 거치는 작업이 많을 때,
+	   이를 서비스로 구현해두면 컨트롤러에서 한번씩 호출하여 사용하면 되지만,
+	   구현하지 않는다면 그 로직을 필요로하는 모든 컨트롤러들에 해당 로직을 구현해야 한다.
+
+2. 보안 : 해커에 의해 컨트롤러가 해킹당하더라도, 서비스를 동해 처리하도록 구현해둠으로써
+	컨트롤러에서 직접 레포지토리에 접근하지는 못하도록 할 수 있다.
+
+3. 엔티티 객체와 DTO 객체의 변환
+Question, Answer와 같은 엔티티 클래스는 DB와 직접 맞닿아 있기 때문에,
+컨트롤러나 Thymeleaf 같은 템플릿 엔진에 전달하여 사용하는 것은 좋지 않다.
+-> 엔티티 직접 사용하여 속성 변경시 테이블 컬럼이 변경될 여지가 있음.
+
+따라서 엔티티를 대신할 DTO 클래스를 만들어 서비스에서 변환하여 사용하는 것이 좋다.
 
 
 
