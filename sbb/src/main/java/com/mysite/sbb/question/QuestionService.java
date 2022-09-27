@@ -2,9 +2,11 @@ package com.mysite.sbb.question;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
+import com.mysite.sbb.DataNotFoundException;
 import com.mysite.sbb.dto.QuestionDto;
 
 import lombok.RequiredArgsConstructor;
@@ -31,5 +33,14 @@ public class QuestionService {
 			}
 			
 			return questionDtoList;
+		}
+		
+		public Question getQuestion(Integer id) {
+			Optional<Question> question = this.questionRepository.findById(id);
+			if(question.isPresent()) {
+				return question.get();
+			} else {
+				throw new DataNotFoundException("question not found");
+			}
 		}
 }
