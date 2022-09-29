@@ -9,10 +9,10 @@ dependencies 정리
 - implementation
 라이브러리 설치
 
-ex)
- Thymeleaf 설치
-dependencies 하위
+
+ - Thymeleaf
 implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
 implementation 'nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect'
 
-
+ - 스프링부트 발리데이션
+implementation 'org.springframework.boot:spring-boot-starter-validation'
