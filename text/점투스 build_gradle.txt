@@ -16,3 +16,8 @@ implementation 'nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect'
 
  - 스프링부트 발리데이션
 implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+ - 스프링 서큐리티
+
+implementation 'org.springframework.boot:spring-boot-starter-security'
+implementation 'org.thymeleaf.extras:thymeleaf-extras-springsecurity5'
