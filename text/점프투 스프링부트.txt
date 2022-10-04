@@ -23,6 +23,8 @@ spring-boot validation 설치시 사용 가능한 어노테이션
 
 스프링 서큐리티
 
+스프링 서큐리티 로그인
+
 =================================================================================
 
 스프링부트 프로젝트 기본 구조
@@ -646,21 +648,44 @@ frame에 포함된 페이지가 페이지를 제공하는 사이트와 동일한
 
 -------------------------------------------------------------------------------------------------------------
 
+스프링 서큐리티 로그인
 
 
 
+SecurityConfig 클래스
+
+ - 로그인 확인
+.and()
+				.formLogin()
+				.loginPage("/user/login")
+				.defaultSuccessUrl("/")
 
 
 
+ - 스프링 서큐리티 인증 담당 (AuthenticationManager)
+@Bean
+public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+	return authenticationConfiguration.getAuthenticationManager();
+}
+-> 해당 빈 생성시 스프링 내부동작으로 인해 해당 클래스에 작성해둔 UserSecurityService와 PasswordEncoder가 자동으로 설정된다.
+
+
+ - 로그인시 아이디 받아 체크하는 서비스 메소드
+public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException
+(클래스에 UserDetailsService 인터페이스 구현)
 
 
 
+ - principal
+컨트롤러 메소드 매개 파라미터에 Principal principal 선언해주면,
+pricipal.getName() 통해서 로그인한 사용자의 아이디를 알 수 있다. 이를 통해 검증 가능.
 
 
 
+ - 로그인이 필요한 url 요청시 에러나지 않고 로그인화면으로 유도하기
+해당 url들에 매핑되어있는 메소드 상단에 @PreAuthorize("isAuthenticate()") 달기 - 인증되지 않았으면 로그인 화면 유도
+SecurityConfig에 @EnableGlobalMethodSecurity(prePostEnabled = true) 어노테이션	- @PreAuthorize 어노테이션 사용 위해 필요
 
-
-
-
+------------------------------------------------------------------------------------------------------------------------
 
 
