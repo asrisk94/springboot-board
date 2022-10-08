@@ -1,6 +1,7 @@
 package com.mysite.sbb.question;
 
 import java.security.Principal;
+import java.util.Optional;
 
 import javax.validation.Valid;
 
@@ -118,4 +119,18 @@ public class QuestionController {
 		return String.format("redirect:/question/detail/%s", id);
 	}
 	
+	@PreAuthorize("isAuthenticated()")
+	@GetMapping("/delete/{id}")
+	public String questionDelete(Principal principal, @PathVariable("id") Integer id) {
+		
+		Question question = this.questionService.getQuestion(id);
+		
+		if(principal.getName() == null || !principal.getName().equals(question.getAuthor().getUsername()) ) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "삭제 권한이 없습니다.");
+		}
+		
+		this.questionService.delete(question);
+		
+		return "redirect:/";
+	}
 }

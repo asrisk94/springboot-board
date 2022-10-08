@@ -29,6 +29,10 @@ spring-boot validation 설치시 사용 가능한 어노테이션
 
 스프링 서큐리티 th:action 미실행 CSRF 수동 입력
 
+
+
+data-uri
+
 =================================================================================
 
 스프링부트 프로젝트 기본 구조
@@ -724,10 +728,28 @@ ex)
 
 ------------------------------------------------------------------------------------------------------------------------------------
 
+th:data
 
+data는 자바스크립트에서 this를 사용해 호출할 수 있는 객체이다. (this.dataset.~)
 
+ex)
+<a href="javascript:void(0);" th:data-uri="@{|/question/delete/${question.id}|}"
 
+const delete_elements = document.getElementsByClassName("delete");
+Array.from(delete_elements).forEach(function(element) {
+	element.addEventListener('click', function() {
+		if(confirm("정말로 삭제하시겠습니까?")) {
+			location.href = this.dataset.uri;
+        		};
+    	});
+});
 
+=> html에서 data-uri="저장값"을 만듦으로서 data객체에 uri라는 속성을 생성.
+=> js에서 this.dataset.uri 를 통해 해당 속성값 호출. (data로 만들고 dataset으로 호출)
+
+data- 뒤에 오는 속성명은 뭐여도 좋다. js에서 동일한 이름으로 호출만 해주면 된다.
+
+-------------------------------------------------------------------------------------------------
 
 
 
