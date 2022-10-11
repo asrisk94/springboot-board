@@ -133,4 +133,19 @@ public class QuestionController {
 		
 		return "redirect:/";
 	}
+	
+	@PreAuthorize("isAuthenticated()")
+	@GetMapping("/vote/{id}")
+	public String vote( @PathVariable("id") Integer id, Principal principal) {
+		
+		Question question = this.questionService.getQuestion(id);
+	
+		SiteUser su = this.userService.getUser(principal.getName());
+		
+		question.voter.add(su);
+		
+		this.questionService.save(question);
+		
+		return String.format("redirect:/question/detail/%s", id);
+	}
 }

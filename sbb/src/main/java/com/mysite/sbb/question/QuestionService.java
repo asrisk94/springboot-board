@@ -79,4 +79,8 @@ public class QuestionService {
 	public void delete(Question question) {
 		this.questionRepository.delete(question);
 	}
+	
+	public void save(Question question) {
+		this.questionRepository.save(question);
+	}
 }
