@@ -35,6 +35,11 @@ anchor
 
 thymeleaf url 사용법 정리
 
+markdown 형식 사용
+
+
+
+
 =================================================================================
 
 스프링부트 프로젝트 기본 구조
@@ -803,5 +808,39 @@ thymeleaf url 사용법 정리
 
 -------------------------------------------------------------------------
 
+markdown 형식 사용
 
+build.gradle = implementation 'org.commonmark:commonmark:0.18.2' 추가
+(뒤에 숫자는 버전인데, 스프링부트 내 관리대상 아닌 라이브러리는 버전도 써줘야한다.)
+
+
+
+package com.mysite.sbb;
+
+import org.commonmark.node.Node;
+import org.commonmark.parser.Parser;
+import org.commonmark.renderer.html.HtmlRenderer;
+import org.springframework.stereotype.Component;
+
+@Component
+public class CommonUtil {
+    public String markdown(String markdown) {
+        Parser parser = Parser.builder().build();
+        Node document = parser.parse(markdown);
+        HtmlRenderer renderer = HtmlRenderer.builder().build();
+        return renderer.render(document);
+    }
+}
+
+위와 같은 클래스를 만들면,
+@Component 어노테이션을 통하여 스프링부트에 의해 관리되는 자바빈으로 등록된다. (템플릿에서 바로 사용 가능)
+위 클래스는 마크다운 스트링을 파싱한 후 HTML 형태로 만들어 리턴한다. (마크다운 문법규칙이 적용된 텍스트)
+
+<div class="card-text" th:utext="${@commonUtil.markdown(question.content)}"></div>
+
+th:text 대신 th:utext를 해야 HTML 태그들이 이스케이핑되지 않고 제대로 출력된다.
+
+@commonUtil 어노테이션을 통해 스프링부트에 등록된 해당 클래스 자바빈 객체의 markdown 메소드를 바로바로 사용할 수 있다.
+
+-------------------------------------------------------------------------------------------------------------
 
